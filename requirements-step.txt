@@ -1,0 +1,5 @@
+#pip intall -r requirements-step.txt
+langchain==0.1.17
+Ollama==0.1.9
+deep-translator==1.11.4
+faiss==cpu-1.8.0
