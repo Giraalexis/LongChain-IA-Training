@@ -7,11 +7,13 @@ from langchain_core.prompts import ChatPromptTemplate
 
 #api key
 key = json.load(open('./utils/api_key.json', encoding='utf-8'))
-os.environ[key["API_KEY"]["OPEN_IA"]] = getpass.getpass()
 #model
-model = ChatOpenAI(model="gpt-3.5-turbo-0125")
+model = ChatOpenAI(api_key=key["API_KEY"]["OPEN_IA"])
 #prompt
-prompt = ChatPromptTemplate.from_template("tell me a short joke about {topic}")
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "dime una corta definicion"),
+    ("user", "{input}")
+])
 #return cadena
 output_parser = StrOutputParser()
 
@@ -19,6 +21,6 @@ output_parser = StrOutputParser()
 chain = prompt | model | output_parser
 
 #pregunta
-response = chain.invoke({"topic": "ice cream"})
+response = chain.invoke({"input": "gatos"})
 #respuesta
 print(response)
