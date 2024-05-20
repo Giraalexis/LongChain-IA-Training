@@ -12,7 +12,7 @@ model = ChatOpenAI(api_key=key["API_KEY"]["OPEN_IA"])
 #prompt
 prompt = ChatPromptTemplate.from_messages([
     ("system", "dime una corta definicion"),
-    ("user", "{input}")
+    ("user", "{input}") 
 ])
 #return cadena
 output_parser = StrOutputParser()
