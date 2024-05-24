@@ -9,6 +9,8 @@ from langchain.chains import create_retrieval_chain #cadena de recuperacion
 from langchain_core.prompts import MessagesPlaceholder #permite añadir un listado de menajes en el prompt
 from langchain_core.messages import HumanMessage, AIMessage #mensaje tipo humano e ia
 from deep_translator import GoogleTranslator #traductor de idiomas
+import asyncio # permite ejecutar async
+from langchain_core.output_parsers import StrOutputParser
 
 
 #splitter: divide el documento en partes
@@ -35,6 +37,7 @@ def chatBotOllamaWithDocWeb(system_context):
     chat_history = []
     #prompt
     prompt = ChatPromptTemplate.from_messages([
+        ("system", "Responde la pregunta con el idioma en el cual se pregunta"),
         ("system", "Responde la pregunta segun el siguiente context:\n\n{context}"),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}")
@@ -49,27 +52,33 @@ def chatBotOllamaWithDocWeb(system_context):
     while True:
 
         #user question
-        user_question = input("Pregunta: ")
+        user_question = input("\nPregunta: ")
 
         #condicion de salida while
         if user_question.upper() in ['EXIT','SALIR'] :
             print("FIN CONVERACION")
             break
 
-        #invoke
-        response = retrieval_chain.invoke({
-            "chat_history": chat_history,
-            "input": user_question
-        })
-        #response
-        print(GoogleTranslator(source='auto', target='es').translate(response["answer"]))            
+        #Stream
+        response = ""
+        for chunk in (retrieval_chain.stream({
+        "chat_history": chat_history,
+        "input": user_question
+        })):
+            
+            if 'answer' not in chunk:
+                continue
+            else:
+                print(chunk['answer'], end='', flush=True)
+                response += chunk['answer']
+          
         #se guarda el chat_history
         chat_history.append(HumanMessage(content=user_question))
-        chat_history.append(AIMessage(content=response["answer"]))
+        chat_history.append(AIMessage(content=response))
             
     
 
 
 
 #ejemplo
-chatBotOllamaWithDocWeb("https://es.numbeo.com/criminalidad/clasificaciones-por-país")
+chatBotOllamaWithDocWeb("https://es.numbeo.com/criminalidad/clasificaciones-por-país")  
