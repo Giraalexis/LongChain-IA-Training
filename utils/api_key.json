@@ -1,6 +1,6 @@
 {
     "API_KEY": {
-        "OPEN_IA": "api_key"
+        "OPEN_IA": "APIKEY"
 
     }
 }

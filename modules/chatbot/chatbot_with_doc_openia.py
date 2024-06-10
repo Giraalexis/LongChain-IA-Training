@@ -14,21 +14,22 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 import json
 from langchain_openai import OpenAIEmbeddings
+from dotenv import load_dotenv
 
 #splitter: divide el documento en partes
 #Embedding: transforma las partes del documento en vectores
 #Retriver: busca y recupera fragmentos importantes para responder consultas del usuario
 
 
-def chatBotOllamaWithDocWeb(system_context):
-    key = json.load(open('./utils/api_key.json', encoding='utf-8'))
+def chatBotOpeniaWithDocWeb_Console(system_context):
+    load_dotenv()
     #carga el documento:
     loader = WebBaseLoader(system_context)
     docs = loader.load()
     #carga modelo vectorial (embeddings)
-    embeddings = OpenAIEmbeddings(api_key=key["API_KEY"]["OPEN_IA"])
+    embeddings = OpenAIEmbeddings()
     #modelo llm
-    llm = ChatOpenAI(api_key=key["API_KEY"]["OPEN_IA"])
+    llm = ChatOpenAI()
     #inizializa recursiveCgaracterTexto
     text_splitter = RecursiveCharacterTextSplitter()        
     #divide el documento en partes
@@ -52,7 +53,7 @@ def chatBotOllamaWithDocWeb(system_context):
     retrieval_chain = create_retrieval_chain(retriever, document_chain)
     
 
-    #CONVERACION CONTINUA
+    #CONVESRACION CONTINUA
     while True:
 
         #user question
@@ -80,9 +81,43 @@ def chatBotOllamaWithDocWeb(system_context):
         chat_history.append(HumanMessage(content=user_question))
         chat_history.append(AIMessage(content=response))
             
+    #ejemplo
+#chatBotOpeniaWithDocWeb_Console("https://es.numbeo.com/criminalidad/clasificaciones-por-país")  
+
+
+async def chatBotOpeniaWithDocWeb_Fastapi(system_context, user_question, chat_history):
+    load_dotenv()
+    #carga el documento:
+    loader = WebBaseLoader(system_context)
+    docs = loader.load()
+    #carga modelo vectorial (embeddings)
+    embeddings = OpenAIEmbeddings()
+    #modelo llm
+    llm = ChatOpenAI()
+    #inizializa recursiveCgaracterTexto
+    text_splitter = RecursiveCharacterTextSplitter()        
+    #divide el documento en partes
+    documents = text_splitter.split_documents(docs)
+    #vectoriza el documento
+    vector = FAISS.from_documents(documents, embeddings)
+    #retriever
+    retriever = vector.as_retriever()
+    #prompt
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Responde la pregunta con el idioma en el cual se pregunta"),
+        ("system", "Responde la pregunta segun el siguiente context:\n\n{context}"),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("user", "{input}")
+    ])
+    #Cree una cadena para pasar una lista de documentos a un modelo.
+    document_chain = create_stuff_documents_chain(llm, prompt)
+    #Cree una cadena de recuperación que recupere documentos y luego los transmita.
+    retrieval_chain = create_retrieval_chain(retriever, document_chain)
     
 
+    response = retrieval_chain.invoke({
+        "chat_history": chat_history,
+        "input": user_question
+    })
 
-
-#ejemplo
-chatBotOllamaWithDocWeb("https://es.numbeo.com/criminalidad/clasificaciones-por-país")  
+    return response

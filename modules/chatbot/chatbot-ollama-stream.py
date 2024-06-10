@@ -9,8 +9,14 @@ model = Ollama(model="llama3")
 chain = prompt | model | parser
 
 
+
+async def print_astream_events():
+    async for event in chain.astream_events({"topic": "parrot"}, version="v1"):
+        print(event)
+
 async def print_async():
     async for chunk in chain.astream({"topic": "parrot"}):
         print(chunk, end="|", flush=True)
 
+asyncio.run(print_astream_events())
 asyncio.run(print_async())

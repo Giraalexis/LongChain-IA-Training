@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 #USER IGNORE LIST
+utils/api_key.json
