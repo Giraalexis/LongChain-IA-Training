@@ -5,3 +5,4 @@ deep-translator==1.11.4
 faiss=
 fastapi=
 streamlit=
+dotenv=

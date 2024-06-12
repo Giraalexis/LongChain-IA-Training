@@ -1,7 +1,9 @@
+import sys
+sys.path.append(".")
 from fastapi import FastAPI
-from chatbot_ollama import chatbotOllama
-from chatbot_openia import chatbot_openia
-from chatbot_with_doc_openia import chatBotOpeniaWithDocWeb_Fastapi
+from modules.chatbot.chatbot_ollama import chatbotOllama
+from modules.chatbot.chatbot_openia import chatbot_openia
+from modules.chatbot.chatbot_with_doc_openia import chatBotOpeniaWithDocWeb_Fastapi
 from pydantic import BaseModel
 import uvicorn
 

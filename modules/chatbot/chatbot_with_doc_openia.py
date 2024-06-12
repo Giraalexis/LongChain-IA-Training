@@ -1,6 +1,6 @@
-from langchain_community.llms import Ollama #modelo ia
+import sys
+sys.path.append(".")
 from langchain_community.document_loaders import WebBaseLoader #cargador de documento web
-from langchain_community.embeddings import OllamaEmbeddings #modelo vectorial
 from langchain_community.vectorstores import FAISS #vectorstore
 from langchain_text_splitters import RecursiveCharacterTextSplitter #divisor de texto de caracter recursivo
 from langchain.chains.combine_documents import create_stuff_documents_chain  
@@ -8,13 +8,10 @@ from langchain_core.prompts import ChatPromptTemplate #prompt de langchain
 from langchain.chains import create_retrieval_chain #cadena de recuperacion
 from langchain_core.prompts import MessagesPlaceholder #permite añadir un listado de menajes en el prompt
 from langchain_core.messages import HumanMessage, AIMessage #mensaje tipo humano e ia
-from deep_translator import GoogleTranslator #traductor de idiomas
-import asyncio # permite ejecutar async
-from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
-import json
-from langchain_openai import OpenAIEmbeddings
-from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI #llm openia
+from langchain_openai import OpenAIEmbeddings #retriever openia
+from dotenv import load_dotenv #variables de entorno
+from modules.retriever.retriever import get_persisted_retriever_or_create, generate_faiss_index_name_with_url
 
 #splitter: divide el documento en partes
 #Embedding: transforma las partes del documento en vectores
@@ -86,26 +83,18 @@ def chatBotOpeniaWithDocWeb_Console(system_context):
 
 
 async def chatBotOpeniaWithDocWeb_Fastapi(system_context, user_question, chat_history):
+    #carga variables de entonrno
     load_dotenv()
-    #carga el documento:
-    loader = WebBaseLoader(system_context)
-    docs = loader.load()
-    #carga modelo vectorial (embeddings)
-    embeddings = OpenAIEmbeddings()
     #modelo llm
     llm = ChatOpenAI()
-    #inizializa recursiveCgaracterTexto
-    text_splitter = RecursiveCharacterTextSplitter()        
-    #divide el documento en partes
-    documents = text_splitter.split_documents(docs)
-    #vectoriza el documento
-    vector = FAISS.from_documents(documents, embeddings)
-    #retriever
-    retriever = vector.as_retriever()
+    #retriever, carga si ya existe local o crea uno nuevo
+    faiss_index = generate_faiss_index_name_with_url(system_context)
+    retriever = get_persisted_retriever_or_create(system_context, "modules/retriever/faiss_index/"+faiss_index)
     #prompt
     prompt = ChatPromptTemplate.from_messages([
         ("system", "Responde la pregunta con el idioma en el cual se pregunta"),
         ("system", "Responde la pregunta segun el siguiente context:\n\n{context}"),
+        ("system", "Al final de la respuesta, informa la fuente de la informacion: {system_context}"),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}")
     ])
@@ -116,8 +105,10 @@ async def chatBotOpeniaWithDocWeb_Fastapi(system_context, user_question, chat_hi
     
 
     response = retrieval_chain.invoke({
+        "system_context": system_context,
         "chat_history": chat_history,
         "input": user_question
     })
 
     return response
+

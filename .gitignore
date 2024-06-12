@@ -160,4 +160,5 @@ cython_debug/
 #.idea/
 
 #USER IGNORE LIST
-utils/api_key.json
+/modules/retriever/faiss_index/*
+/utils/api_key.json

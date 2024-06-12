@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-url_chatbot= "http://127.0.0.1:8000/chatbot_openia"
+url_chatbot= "http://127.0.0.1:8001/chatbot_openia"
 
 st.title("CHATBOT")
 pregunta = st.chat_input("Pregunta: ")
