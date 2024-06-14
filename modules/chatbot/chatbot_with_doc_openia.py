@@ -87,8 +87,9 @@ async def chatBotOpeniaWithDocWeb_Fastapi(system_context, user_question, chat_hi
     load_dotenv()
     #modelo llm
     llm = ChatOpenAI()
-    #retriever, carga si ya existe local o crea uno nuevo
+    #Genera un nombre para el faiss_index
     faiss_index = generate_faiss_index_name_with_url(system_context)
+    #retriever, carga si ya existe local o crea uno nuevo
     retriever = get_persisted_retriever_or_create(system_context, "modules/retriever/faiss_index/"+faiss_index)
     #prompt
     prompt = ChatPromptTemplate.from_messages([
@@ -109,6 +110,6 @@ async def chatBotOpeniaWithDocWeb_Fastapi(system_context, user_question, chat_hi
         "chat_history": chat_history,
         "input": user_question
     })
-
-    return response
+    print(response['answer'])
+    return response['answer']
 

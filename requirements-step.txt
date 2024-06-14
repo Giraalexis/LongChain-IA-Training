@@ -6,3 +6,4 @@ faiss=
 fastapi=
 streamlit=
 dotenv=
+validators=

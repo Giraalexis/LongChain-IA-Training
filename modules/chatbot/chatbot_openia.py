@@ -1,9 +1,10 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import MessagesPlaceholder #permite añadir un listado de menajes en el prompt
 from dotenv import load_dotenv
 
-async def chatbot_openia(system_context,user_question):
+async def chatbot_openia(system_context,user_question,chat_history):
 
     #api key
     load_dotenv()
@@ -12,6 +13,7 @@ async def chatbot_openia(system_context,user_question):
     #prompt
     prompt = ChatPromptTemplate.from_messages([
         ("system", system_context),
+        MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}") 
     ])
     #return cadena
@@ -21,7 +23,10 @@ async def chatbot_openia(system_context,user_question):
     chain = prompt | model | output_parser
 
     #pregunta
-    response = chain.invoke({'input': user_question})
+    response = chain.invoke({
+        'input': user_question,
+        'chat_history': chat_history
+    })
     #respuesta
     print(response)
     return response
