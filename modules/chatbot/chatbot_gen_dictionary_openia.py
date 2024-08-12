@@ -23,11 +23,12 @@ async def chatbot_gen_dicionary_openia(system_context,user_question,chat_history
     estructura_ejemplo = '''[{"fecha": '2023-01-01', "ventas": 100}, {"fecha": "2023-01-02", "ventas": 150}]'''
     #prompt
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Utiliza el siguiente contexto y el historial de chat para generar la estructura de datos solicitada por el usuario."),
-        ("system", "Si el usuario pide generar un gráfico o una tabla, convierte la información en un diccionario adecuado que represente los datos en el formato solicitado."),
-        ("system", "La respuesta debe ser exclusivamente una lista de diccionarios, sin incluir texto adicional."),
-        ("system", "La estructura de salida esperada debe seguir el siguiente ejemplo: {estructura_ejemplo}."),
-        ("system", "No incluyas el prefijo de formato como 'python' o 'json' en la respuesta."),
+        ("system", "A partir del siguiente contexto y el chat_history, debes generar una estructura con la información según lo solicitado por el usuario."),
+        ("system", "Si piden generar un Grafico o Tabla, igualmente debes generar el diccionario segun lo solicitado"),
+        ("system", "La estructura debe ser una lista de diccionario."),
+        ("system", "Solo debes responder con la lista de diccionario."),
+        ("system", "Ejemplo de estructura: {estructura_ejemplo}"),
+        ("system", "No incluir el nombre del formato de la estructura al comienzo (python, json, etc)"),
         ("system", "contexto:\n\n{context}"),
         MessagesPlaceholder(variable_name="chat_history"),
         ("user", "{input}")
